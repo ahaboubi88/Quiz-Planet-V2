@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from public/
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from public/ - Express serves them locally, Vercel serves them via rewrites
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // --- API Routes ---
 
@@ -30,10 +30,14 @@ app.get('/api/is-demo', async (req, res) => {
     res.json({ isDemo: await isCurrentlyDemo() });
 });
 
-// Serve landing page as default for any non-API routes (Express 5 safe)
-app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) return next();
-    res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+// Fallback for API 404s
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API Endpoint not found' });
+});
+
+// Landing page fallback for non-file requests
+app.get('/', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'landing.html'));
 });
 
 // Database initialization and server start
@@ -57,3 +61,4 @@ startServer();
 
 // For Vercel / Serverless
 module.exports = app;
+module.exports.handler = app; // Backup for some hosting environments

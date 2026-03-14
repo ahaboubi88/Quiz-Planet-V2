@@ -1,36 +1,9 @@
 {
   "version": 2,
-  "name": "quiz-planet-web",
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-       "src": "/css/(.*)",
-       "dest": "/public/css/$1"
-    },
-    {
-       "src": "/img/(.*)",
-       "dest": "/public/img/$1"
-    },
-    {
-       "src": "/js/(.*)",
-       "dest": "/public/js/$1"
-    },
-    {
-      "src": "/admin.html",
-      "dest": "/public/admin.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/server.js" },
+    { "source": "/", "destination": "/public/landing.html" },
+    { "source": "/admin", "destination": "/public/admin.html" }
   ]
 }
