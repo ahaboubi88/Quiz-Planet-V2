@@ -1,0 +1,81 @@
+{
+  "name": "quiz-planet",
+  "version": "1.2.0",
+  "description": "Local Kahoot clone for classroom use — runs on local Wi-Fi, no internet needed",
+  "main": "main.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "electron": "electron .",
+    "dist": "electron-builder --win",
+    "dist:demo": "node scripts/build-demo.js",
+    "dist:dir": "electron-builder --win --dir"
+  },
+  "keywords": [
+    "kahoot",
+    "quiz",
+    "classroom",
+    "education",
+    "local"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.1.0",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0",
+    "socket.io": "^4.8.3",
+    "sqlite3": "^5.1.7",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^26.0.12",
+    "prebuild-install": "^7.1.3"
+  },
+  "build": {
+    "appId": "com.quizplanet.app",
+    "productName": "Quiz Planet",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server.js",
+      "src/**/*",
+      "public/**/*",
+      "node_modules/**/*",
+      "!node_modules/electron/**",
+      "!node_modules/electron-builder/**",
+      "!node_modules/@electron/**",
+      "!**/node_modules/*/{test,tests,testing,example,examples,bin,docs}",
+      "!**/node_modules/*/.*"
+    ],
+    "extraResources": [],
+    "asar": true,
+    "asarUnpack": [
+      "**/sqlite3/**/*.node",
+      "src/bin/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "public/img/favicon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Quiz_Planet_Setup.exe"
+    },
+    "portable": {
+      "artifactName": "Quiz_Planet_Portable.exe"
+    }
+  }
+}

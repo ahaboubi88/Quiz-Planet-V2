@@ -1,0 +1,691 @@
+/* ============================================================
+   Quiz Editor — Desktop-first, clean management interface
+   ============================================================ */
+
+/* --- Layout --- */
+.editor-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg);
+    min-height: 100vh;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xl);
+}
+
+.editor-header h1 {
+    font-size: var(--font-size-2xl);
+}
+
+.editor-actions {
+    display: flex;
+    gap: var(--space-md);
+}
+
+/* --- Quiz List --- */
+.quiz-list-section {}
+
+.quiz-grid {
+    display: grid;
+    gap: var(--space-md);
+}
+
+.quiz-card {
+    background: var(--color-surface);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quiz-card:hover {
+    background: var(--color-surface-hover);
+    border-color: var(--color-primary-light);
+    transform: translateY(-1px);
+}
+
+.quiz-card-info {
+    flex: 1;
+}
+
+.quiz-card-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 4px;
+}
+
+.quiz-card-meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.quiz-card-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.icon-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text-muted);
+    border-radius: var(--border-radius-sm);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: var(--font-size-md);
+    transition: all var(--transition-fast);
+}
+
+.icon-btn:hover {
+    background: var(--color-surface-hover);
+    color: white;
+}
+
+.icon-btn.delete:hover {
+    background: var(--color-error);
+    color: white;
+}
+
+/* --- Editor View --- */
+.editor-section {
+    display: none;
+}
+
+.editor-section.active {
+    display: block;
+}
+
+.editor-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-bottom: var(--space-lg);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.editor-back:hover {
+    color: white;
+}
+
+.quiz-meta-form {
+    background: var(--color-surface);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.form-row {
+    margin-bottom: var(--space-md);
+}
+
+.form-row:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--color-text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    border-color: var(--color-primary-light);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.form-select option {
+    background: var(--color-surface);
+}
+
+/* --- Question List --- */
+.questions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+}
+
+.questions-header h2 {
+    font-size: var(--font-size-xl);
+}
+
+.add-question-group {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.question-type-select {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    outline: none;
+}
+
+/* --- Question Card --- */
+.question-card {
+    background: var(--color-surface);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+    transition: border-color var(--transition-fast);
+}
+
+.question-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.question-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.question-number {
+    background: var(--color-primary);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+}
+
+.question-card-header .form-input {
+    flex: 1;
+}
+
+.question-card-header .form-select {
+    width: auto;
+    min-width: 120px;
+}
+
+.question-settings {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.question-settings .form-select,
+.question-settings .form-input {
+    width: auto;
+    min-width: 100px;
+}
+
+/* --- Answer Editor --- */
+.answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
+
+.answer-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    border-radius: var(--border-radius-sm);
+}
+
+.answer-row.answer-red {
+    background: rgba(226, 27, 60, 0.15);
+    border: 1px solid rgba(226, 27, 60, 0.3);
+}
+
+.answer-row.answer-blue {
+    background: rgba(19, 104, 206, 0.15);
+    border: 1px solid rgba(19, 104, 206, 0.3);
+}
+
+.answer-row.answer-yellow {
+    background: rgba(216, 158, 0, 0.15);
+    border: 1px solid rgba(216, 158, 0, 0.3);
+}
+
+.answer-row.answer-green {
+    background: rgba(38, 137, 12, 0.15);
+    border: 1px solid rgba(38, 137, 12, 0.3);
+}
+
+.answer-shape {
+    width: 28px;
+    text-align: center;
+    font-size: var(--font-size-lg);
+    flex-shrink: 0;
+}
+
+.answer-row .form-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.answer-correct-toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.answer-correct-toggle:checked {
+    background: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.answer-correct-toggle:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* True/False answer row */
+.answers-tf {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* Type-answer */
+.type-answer-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.type-answer-help {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+/* Puzzle */
+.puzzle-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.puzzle-item-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--color-surface-hover);
+    padding: var(--space-sm);
+    border-radius: var(--border-radius-sm);
+}
+
+.puzzle-order-badge {
+    width: 28px;
+    height: 28px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* --- Image Upload --- */
+.image-upload-area {
+    margin-bottom: var(--space-md);
+}
+
+.image-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface-hover);
+    color: var(--color-text-muted);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+}
+
+.image-upload-btn:hover {
+    border-color: var(--color-primary-light);
+    color: white;
+}
+
+.image-preview {
+    max-width: 200px;
+    max-height: 100px;
+    border-radius: var(--border-radius-sm);
+    margin-top: var(--space-sm);
+}
+
+.remove-image-btn {
+    background: var(--color-error);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 4px 8px;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    margin-left: var(--space-sm);
+}
+
+/* --- Toast Notifications --- */
+.toast-container {
+    position: fixed;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.toast {
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: var(--font-weight-bold);
+    animation: slideInRight 0.3s ease;
+    max-width: 350px;
+}
+
+.toast.success {
+    background: var(--color-success);
+}
+
+.toast.error {
+    background: var(--color-error);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* --- Import Modal --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: var(--z-modal);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: var(--color-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    max-width: 500px;
+    width: 90%;
+}
+
+.modal h2 {
+    margin-bottom: var(--space-lg);
+}
+
+.drop-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: var(--space-2xl);
+    text-align: center;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--space-lg);
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+    border-color: var(--color-primary-light);
+    background: rgba(90, 50, 180, 0.1);
+}
+
+.drop-zone-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+}
+
+.drop-zone-text {
+    font-size: var(--font-size-md);
+    margin-bottom: var(--space-sm);
+}
+
+.drop-zone-formats {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+/* --- Confirm Dialog --- */
+.confirm-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: calc(var(--z-modal) + 1);
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-overlay.active {
+    display: flex;
+}
+
+.confirm-box {
+    background: var(--color-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    max-width: 400px;
+    text-align: center;
+}
+
+.confirm-box p {
+    margin-bottom: var(--space-lg);
+}
+
+.confirm-btns {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+}
+
+.btn-cancel {
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+}
+
+.btn-danger {
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-error);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+}
+
+/* ============================================================
+   RESPONSIVE — Quiz Editor
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .editor-wrapper {
+        padding: var(--space-md) var(--space-sm);
+        padding-top: calc(var(--space-2xl) + 20px);
+    }
+
+    .editor-header {
+        flex-direction: column;
+        gap: var(--space-md);
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .editor-header h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    .editor-actions {
+        justify-content: center;
+    }
+
+    .questions-header {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: stretch;
+    }
+
+    .add-question-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .answers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .answers-tf {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .question-card-header {
+        flex-wrap: wrap;
+    }
+
+    .question-card-header .form-select {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .question-card {
+        padding: var(--space-md);
+    }
+
+    .quiz-meta-form {
+        padding: var(--space-md);
+    }
+
+    .quiz-card {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: stretch;
+    }
+
+    .quiz-card-actions {
+        justify-content: flex-end;
+    }
+
+    .form-row[style*="display: flex"] {
+        flex-direction: column !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .editor-wrapper {
+        padding: var(--space-sm);
+        padding-top: calc(var(--space-xl) + 20px);
+    }
+
+    .toast {
+        max-width: 90vw;
+    }
+
+    .drop-zone {
+        padding: var(--space-lg);
+    }
+
+    .question-settings {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .question-settings .form-select,
+    .question-settings .form-input {
+        width: 100%;
+        min-width: unset;
+    }
+}
