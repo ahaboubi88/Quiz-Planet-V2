@@ -1,5 +1,4 @@
 const express = require('express');
-const http = require('http');
 const path = require('path');
 const { initDatabase } = require('../src/db/database');
 const { seedDatabase } = require('../src/db/seed');
@@ -9,18 +8,12 @@ const licenseRoutes = require('../src/routes/licenseRoutes');
 const { isCurrentlyDemo } = require('../src/utils/status');
 
 const app = express();
-const server = http.createServer(app);
-
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from public/ - Vercel will prioritize this directory
-app.use(express.static(path.join(process.cwd(), 'public')));
-
-// Middleware to ensure DB is initialized (Serverless friendly)
+// Database initialization middleware
 let dbInitialized = false;
 const ensureDb = async (req, res, next) => {
     try {
@@ -38,28 +31,26 @@ const ensureDb = async (req, res, next) => {
 
 // --- API Routes ---
 
-// Mount routes at both / and /api to handle different Vercel rewrite behaviors
+// Mount at /api for consistency with frontend calls
 app.use('/api', ensureDb, reviewRoutes);
 app.use('/api', ensureDb, statsRoutes);
 app.use('/api', ensureDb, licenseRoutes);
-app.use('/', ensureDb, reviewRoutes);
-app.use('/', ensureDb, statsRoutes);
-app.use('/', ensureDb, licenseRoutes);
 
 app.get('/api/is-demo', ensureDb, async (req, res) => {
-    res.json({ isDemo: await isCurrentlyDemo() });
+    try {
+        const isDemo = await isCurrentlyDemo();
+        res.json({ isDemo });
+    } catch (e) {
+        res.json({ isDemo: true });
+    }
 });
 
-// Fallback for API 404s
+// For any other path, serve from public folder if Vercel hasn't caught it
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Catch-all for undefined API routes
 app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API Endpoint not found' });
 });
 
-// Landing page fallback for non-file requests
-app.get('/', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'landing.html'));
-});
-
-// For Vercel / Serverless
 module.exports = app;
-module.exports.handler = app;
