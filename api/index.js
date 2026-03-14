@@ -1,13 +1,22 @@
 const express = require('express');
 const path = require('path');
-const { initDatabase } = require('../src/db/database');
-const { seedDatabase } = require('../src/db/seed');
-const reviewRoutes = require('../src/routes/reviewRoutes');
-const statsRoutes = require('../src/routes/statsRoutes');
-const licenseRoutes = require('../src/routes/licenseRoutes');
-const { isCurrentlyDemo } = require('../src/utils/status');
-
 const app = express();
+
+// --- CRITICAL: Diagnostic logging to catch require errors ---
+let initError = null;
+let reviewRoutes, statsRoutes, licenseRoutes, initDatabase, seedDatabase, isCurrentlyDemo;
+
+try {
+    initDatabase = require('../src/db/database').initDatabase;
+    seedDatabase = require('../src/db/seed').seedDatabase;
+    reviewRoutes = require('../src/routes/reviewRoutes');
+    statsRoutes = require('../src/routes/statsRoutes');
+    licenseRoutes = require('../src/routes/licenseRoutes');
+    isCurrentlyDemo = require('../src/utils/status').isCurrentlyDemo;
+} catch (err) {
+    console.error('TOP-LEVEL REQUIRE ERROR:', err);
+    initError = err;
+}
 
 process.on('uncaughtException', (err) => {
     console.error('CRITICAL UNCAUGHT EXCEPTION:', err);
@@ -18,6 +27,13 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to ensure DB is initialized
 let dbInitialized = false;
 app.use(async (req, res, next) => {
+    if (initError) {
+        return res.status(500).json({ 
+            error: 'Server failed to start (Initialization Error)', 
+            details: initError.message,
+            stack: initError.stack
+        });
+    }
     try {
         if (!dbInitialized) {
             console.log('  ⚡ Initializing Database for request:', req.path);
