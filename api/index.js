@@ -45,8 +45,13 @@ app.get('/api/is-demo', ensureDb, async (req, res) => {
     }
 });
 
-// For any other path, serve from public folder if Vercel hasn't caught it
-app.use(express.static(path.join(process.cwd(), 'public')));
+// For any other path, serve from root folder if Vercel hasn't caught it
+app.use(express.static(process.cwd()));
+
+// Landing page fallback for non-file requests - ensures index.html is served for root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'index.html'));
+});
 
 // Catch-all for undefined API routes
 app.use('/api/*', (req, res) => {
