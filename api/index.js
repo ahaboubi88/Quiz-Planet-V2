@@ -2,6 +2,18 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
+// --- BARE MINIMUM PING (No DB, No Routes) ---
+app.get('/api/ping', (req, res) => {
+    res.json({ 
+        status: 'ALIVE', 
+        time: new Date().toISOString(),
+        platform: process.platform,
+        arch: process.arch,
+        cwd: process.cwd(),
+        dirname: __dirname
+    });
+});
+
 // --- CRITICAL: Diagnostic logging to catch require errors ---
 let initError = null;
 let reviewRoutes, statsRoutes, licenseRoutes, initDatabase, seedDatabase, isCurrentlyDemo;
@@ -55,17 +67,22 @@ app.use(async (req, res, next) => {
 // --- API Routes ---
 
 app.get('/api', (req, res) => {
-    res.json({ status: 'API IS ALIVE', version: '1.2.0' });
+    res.json({ 
+        status: 'API IS ALIVE', 
+        version: '1.2.0',
+        initError: initError ? initError.message : null
+    });
 });
 
-app.use('/api', reviewRoutes);
-app.use('/api', statsRoutes);
-app.use('/api', licenseRoutes);
-
-// Serve static files from root
-app.use(express.static(path.join(__dirname, '..')));
+// Defensive mounting
+if (reviewRoutes) app.use('/api', reviewRoutes);
+if (statsRoutes) app.use('/api', statsRoutes);
+if (licenseRoutes) app.use('/api', licenseRoutes);
 
 app.get('/api/is-demo', async (req, res) => {
+    if (initError || !isCurrentlyDemo) {
+        return res.json({ isDemo: true, loadError: !!initError });
+    }
     try {
         const isDemo = await isCurrentlyDemo();
         res.json({ isDemo });
@@ -74,18 +91,11 @@ app.get('/api/is-demo', async (req, res) => {
     }
 });
 
-// Admin page fallback
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'admin.html'));
-});
-
-// Landing page fallback
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
-
 // Catch-all for API 404s
 app.use('/api/*', (req, res) => {
+    if (initError) {
+        return res.status(500).json({ error: 'Server load error', details: initError.message });
+    }
     res.status(404).json({ error: 'API Endpoint not found' });
 });
 
