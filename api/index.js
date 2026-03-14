@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from root - Express serves them locally, Vercel serves them automatically
-app.use(express.static(process.cwd()));
+// Serve static files from public/ - Vercel will prioritize this directory
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Middleware to ensure DB is initialized (Serverless friendly)
 let dbInitialized = false;
@@ -57,7 +57,7 @@ app.use('/api/*', (req, res) => {
 
 // Landing page fallback for non-file requests
 app.get('/', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'index.html'));
+    res.sendFile(path.join(process.cwd(), 'public', 'landing.html'));
 });
 
 // For Vercel / Serverless
