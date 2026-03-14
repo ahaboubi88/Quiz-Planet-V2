@@ -20,13 +20,33 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from root - Express serves them locally, Vercel serves them automatically
 app.use(express.static(process.cwd()));
 
+// Middleware to ensure DB is initialized (Serverless friendly)
+let dbInitialized = false;
+const ensureDb = async (req, res, next) => {
+    try {
+        if (!dbInitialized) {
+            await initDatabase();
+            await seedDatabase();
+            dbInitialized = true;
+        }
+        next();
+    } catch (err) {
+        console.error('DB Init Error:', err);
+        res.status(500).json({ error: 'Database failed to initialize' });
+    }
+};
+
 // --- API Routes ---
 
-app.use('/api', reviewRoutes);
-app.use('/api', statsRoutes);
-app.use('/api', licenseRoutes);
+// Mount routes at both / and /api to handle different Vercel rewrite behaviors
+app.use('/api', ensureDb, reviewRoutes);
+app.use('/api', ensureDb, statsRoutes);
+app.use('/api', ensureDb, licenseRoutes);
+app.use('/', ensureDb, reviewRoutes);
+app.use('/', ensureDb, statsRoutes);
+app.use('/', ensureDb, licenseRoutes);
 
-app.get('/api/is-demo', async (req, res) => {
+app.get('/api/is-demo', ensureDb, async (req, res) => {
     res.json({ isDemo: await isCurrentlyDemo() });
 });
 
@@ -35,30 +55,11 @@ app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API Endpoint not found' });
 });
 
-// Landing page fallback for non-file requests - rename landing.html to index.html
+// Landing page fallback for non-file requests
 app.get('/', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
-// Database initialization and server start
-async function startServer() {
-    try {
-        await initDatabase();
-        await seedDatabase();
-
-        if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-            server.listen(PORT, '0.0.0.0', () => {
-                console.log(`Quiz Planet Web Server (v2) running on port ${PORT}`);
-            });
-        }
-    } catch (err) {
-        console.error('SERVER STARTUP ERROR:', err);
-        if (!process.env.VERCEL) process.exit(1);
-    }
-}
-
-startServer();
-
 // For Vercel / Serverless
 module.exports = app;
-module.exports.handler = app; // Backup for some hosting environments
+module.exports.handler = app;
