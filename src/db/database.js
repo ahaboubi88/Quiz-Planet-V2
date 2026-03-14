@@ -10,7 +10,7 @@ const fs = require('fs');
 
 // Database path — use the persistent path defined in main.js
 // If not set (emergency fallback), use project local data
-const PERSISTENT_DIR = process.env.QUIZ_PLANET_DATA_PATH || path.join(__dirname, '..', '..', 'data');
+const PERSISTENT_DIR = process.env.QUIZ_PLANET_DATA_PATH || path.join(process.cwd(), 'data');
 let DB_PATH = path.join(PERSISTENT_DIR, 'kahoot-local.db');
 
 // Vercel/Serverless Fix: File system is read-only. Use in-memory DB as fallback.

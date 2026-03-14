@@ -1,12 +1,12 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const { initDatabase } = require('./src/db/database');
-const { seedDatabase } = require('./src/db/seed');
-const reviewRoutes = require('./src/routes/reviewRoutes');
-const statsRoutes = require('./src/routes/statsRoutes');
-const licenseRoutes = require('./src/routes/licenseRoutes');
-const { isCurrentlyDemo } = require('./src/utils/status');
+const { initDatabase } = require('../src/db/database');
+const { seedDatabase } = require('../src/db/seed');
+const reviewRoutes = require('../src/routes/reviewRoutes');
+const statsRoutes = require('../src/routes/statsRoutes');
+const licenseRoutes = require('../src/routes/licenseRoutes');
+const { isCurrentlyDemo } = require('../src/utils/status');
 
 const app = express();
 const server = http.createServer(app);
