@@ -34,34 +34,33 @@ app.use(async (req, res, next) => {
             stack: initError.stack
         });
     }
-    try {
-        if (!dbInitialized) {
+    // Only init DB for API requests
+    if (!dbInitialized && req.path.startsWith('/api')) {
+        try {
             console.log('  ⚡ Initializing Database for request:', req.path);
             await initDatabase();
             await seedDatabase();
             dbInitialized = true;
+        } catch (err) {
+            console.error('DB Init Error:', err);
+            return res.status(500).json({ 
+                error: 'Database initialization failed', 
+                details: err.message
+            });
         }
-        next();
-    } catch (err) {
-        console.error('DB Init Error:', err);
-        // Return JSON error so we can see it in the frontend
-        res.status(500).json({ 
-            error: 'Database initialization failed', 
-            details: err.message,
-            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-        });
     }
+    next();
 });
 
 // --- API Routes ---
 
-// Local routes handle /api/reviews or /reviews depending on Vercel's behavior
+app.get('/api', (req, res) => {
+    res.json({ status: 'API IS ALIVE', version: '1.2.0' });
+});
+
 app.use('/api', reviewRoutes);
 app.use('/api', statsRoutes);
 app.use('/api', licenseRoutes);
-app.use('/', reviewRoutes);
-app.use('/', statsRoutes);
-app.use('/', licenseRoutes);
 
 app.get('/api/is-demo', async (req, res) => {
     try {

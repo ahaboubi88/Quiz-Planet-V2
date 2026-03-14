@@ -4,9 +4,11 @@
  * This replaces better-sqlite3 because sqlite3 has better prebuilt binary support for Electron.
  */
 
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
+
+// Lazy-load sqlite3 inside initDatabase
+let sqlite3 = null;
 
 // Database path — use the persistent path defined in main.js
 // If not set (emergency fallback), use project local data
@@ -84,6 +86,11 @@ const dbWrapper = {
  * Initialize the database — create file and tables if they don't exist
  */
 async function initDatabase() {
+    // Lazy load native dependency
+    if (!sqlite3) {
+        sqlite3 = require('sqlite3').verbose();
+    }
+
     // Ensure data directory exists (Skip if in-memory)
     if (DB_PATH !== ':memory:') {
         const dataDir = path.dirname(DB_PATH);
@@ -102,7 +109,12 @@ async function initDatabase() {
 
                 try {
                     // Enable WAL and Foreign Keys
-                    await dbWrapper.pragma('journal_mode = WAL');
+                    // Try/Catch WAL because it fails on some systems/in-memory
+                    try {
+                        await dbWrapper.pragma('journal_mode = WAL');
+                    } catch (e) {
+                        console.warn('Could not set WAL mode (ignoring for serverless compatibility)');
+                    }
                     await dbWrapper.pragma('foreign_keys = ON');
 
                     // Run schema
