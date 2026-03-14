@@ -17,6 +17,11 @@ let _cachedHWID = null;
 function getHWID() {
     if (_cachedHWID) return _cachedHWID;
 
+    // Vercel / Linux / Non-Windows Fix: PowerShell is only for local desktop use.
+    if (process.platform !== 'win32' || process.env.VERCEL) {
+        return 'WEB-SERVER-ENVIRONMENT';
+    }
+
     try {
         // Use PowerShell to get IDs. These are standard on Windows.
         const cpuId = execSync('powershell -Command "(Get-CimInstance Win32_Processor).ProcessorId"', { timeout: 10000 }).toString().trim();
