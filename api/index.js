@@ -62,6 +62,9 @@ app.use('/api', reviewRoutes);
 app.use('/api', statsRoutes);
 app.use('/api', licenseRoutes);
 
+// Serve static files from root
+app.use(express.static(path.join(__dirname, '..')));
+
 app.get('/api/is-demo', async (req, res) => {
     try {
         const isDemo = await isCurrentlyDemo();
@@ -69,6 +72,16 @@ app.get('/api/is-demo', async (req, res) => {
     } catch (e) {
         res.json({ isDemo: true });
     }
+});
+
+// Admin page fallback
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'admin.html'));
+});
+
+// Landing page fallback
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Catch-all for API 404s
