@@ -303,6 +303,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Fetch the Latest Game Download Link directly from GitHub
+async function fetchLatestDownload() {
+    try {
+        const res = await fetch('https://api.github.com/repos/ahaboubi88/Quiz-Planet-V2/releases/latest');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.assets && data.assets.length > 0) {
+                const directUrl = data.assets[0].browser_download_url;
+                const links = document.querySelectorAll('.game-download-link');
+                links.forEach(link => {
+                    link.href = directUrl; 
+                });
+            }
+        }
+    } catch (err) { console.error('Error fetching latest download:', err); }
+}
+
+document.addEventListener('DOMContentLoaded', fetchLatestDownload);
+
 /**
  * License Request Modal Logic
  */
