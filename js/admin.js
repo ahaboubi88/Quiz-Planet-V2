@@ -117,13 +117,17 @@ async function loadLicense() {
         statusText.className = 'badge ' + (status.status === 'DEMO' ? 'badge-hidden' : 'badge-approved');
 
         if (status.status === 'DEMO') {
-            actForm.style.display = 'block';
-            portableSection.style.opacity = '0.5';
-            portableSection.style.pointerEvents = 'none';
+            if (actForm) actForm.style.display = 'block';
+            if (portableSection) {
+                portableSection.style.opacity = '0.5';
+                portableSection.style.pointerEvents = 'none';
+            }
         } else {
-            actForm.style.display = 'none';
-            portableSection.style.opacity = '1';
-            portableSection.style.pointerEvents = 'auto';
+            if (actForm) actForm.style.display = 'none';
+            if (portableSection) {
+                portableSection.style.opacity = '1';
+                portableSection.style.pointerEvents = 'auto';
+            }
         }
     } catch (err) { console.error(err); }
 }
