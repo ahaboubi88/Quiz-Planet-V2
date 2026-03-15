@@ -221,6 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const fetchReviews = async () => {
         try {
             const res = await fetch('/api/reviews');
+            if (!res.ok) {
+                console.warn('Reviews API returned status:', res.status);
+                reviewsFeed.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-muted);">No reviews yet. Be the first!</p>`;
+                return;
+            }
             const data = await res.json();
             if (data.length === 0) {
                 reviewsFeed.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-muted);">No reviews yet. Be the first!</p>`;
@@ -238,6 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
             `).join('');
         } catch (err) {
             console.error('Error loading reviews:', err);
+            if (reviewsFeed) {
+                reviewsFeed.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-muted);">No reviews yet. Be the first!</p>`;
+            }
         }
     };
 

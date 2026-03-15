@@ -1,141 +1,229 @@
 /**
  * Database initialization and access
- * Uses sqlite3 with a Promise-based wrapper for compatibility.
- * This replaces better-sqlite3 because sqlite3 has better prebuilt binary support for Electron.
+ * Uses sql.js (pure JS/WASM SQLite) for Vercel compatibility.
+ * Uses sqlite3 (native addon) for local/Electron environments.
  */
 
 const path = require('path');
 const fs = require('fs');
 
-// Lazy-load sqlite3 inside initDatabase
-let sqlite3 = null;
-
-// Database path — use the persistent path defined in main.js
-// If not set (emergency fallback), use project local data
-const PERSISTENT_DIR = process.env.QUIZ_PLANET_DATA_PATH || path.join(process.cwd(), 'data');
-let DB_PATH = path.join(PERSISTENT_DIR, 'kahoot-local.db');
-
-// Vercel/Serverless Fix: File system is read-only. Use in-memory DB as fallback.
-if (process.env.VERCEL) {
-    console.log('  ☁  Vercel detected: Using in-memory database');
-    DB_PATH = ':memory:';
-}
-
-// Schema is part of the application source (read-only in ASAR), so it remains relative to __dirname
+// Schema is part of the application source
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 let dbInstance = null;
 let dbPromise = null;
 
-/**
- * Promise-based wrapper for sqlite3
- */
-const dbWrapper = {
-    all: (sql, params = []) => new Promise((resolve, reject) => {
-        dbInstance.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows));
-    }),
-    get: (sql, params = []) => new Promise((resolve, reject) => {
-        dbInstance.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
-    }),
-    run: (sql, params = []) => new Promise((resolve, reject) => {
-        dbInstance.run(sql, params, function (err) {
-            if (err) return reject(err);
-            resolve({ lastInsertRowid: this.lastID, changes: this.changes });
-        });
-    }),
-    exec: (sql) => new Promise((resolve, reject) => {
-        dbInstance.exec(sql, (err) => err ? reject(err) : resolve());
-    }),
-    prepare: (sql) => {
-        // Simplified prepare that returns an object with run/all/get that are actually wrappers around the DB methods
-        // This is a minimal compatibility layer for better-sqlite3's prepare().run() etc
-        return {
-            run: (...params) => dbWrapper.run(sql, params),
-            all: (...params) => dbWrapper.all(sql, params),
-            get: (...params) => dbWrapper.get(sql, params)
-        };
-    },
-    transaction: (fn) => {
-        // Simple transaction wrapper (serialize in sqlite3)
-        return async (...args) => {
-            return new Promise((resolve, reject) => {
-                dbInstance.serialize(async () => {
-                    try {
-                        await dbWrapper.exec('BEGIN TRANSACTION');
-                        const result = await fn(...args);
-                        await dbWrapper.exec('COMMIT');
-                        resolve(result);
-                    } catch (err) {
-                        await dbWrapper.exec('ROLLBACK');
-                        reject(err);
-                    }
+// Detect environment
+const IS_VERCEL = !!process.env.VERCEL;
+
+// Database path for local environments
+const PERSISTENT_DIR = process.env.QUIZ_PLANET_DATA_PATH || path.join(process.cwd(), 'data');
+const DB_PATH = IS_VERCEL ? ':memory:' : path.join(PERSISTENT_DIR, 'kahoot-local.db');
+
+if (IS_VERCEL) {
+    console.log('  ☁  Vercel detected: Using sql.js (in-memory)');
+}
+
+// ─── sql.js wrapper (Vercel / serverless) ───────────────────────────
+function createSqlJsWrapper(sqlJsDb) {
+    return {
+        all: (sql, params = []) => {
+            try {
+                const stmt = sqlJsDb.prepare(sql);
+                if (params.length) stmt.bind(params);
+                const results = [];
+                while (stmt.step()) {
+                    results.push(stmt.getAsObject());
+                }
+                stmt.free();
+                return Promise.resolve(results);
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        },
+        get: (sql, params = []) => {
+            try {
+                const stmt = sqlJsDb.prepare(sql);
+                if (params.length) stmt.bind(params);
+                const row = stmt.step() ? stmt.getAsObject() : undefined;
+                stmt.free();
+                return Promise.resolve(row);
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        },
+        run: (sql, params = []) => {
+            try {
+                sqlJsDb.run(sql, params);
+                return Promise.resolve({
+                    lastInsertRowid: sqlJsDb.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] || 0,
+                    changes: sqlJsDb.getRowsModified()
                 });
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        },
+        exec: (sql) => {
+            try {
+                sqlJsDb.exec(sql);
+                return Promise.resolve();
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        },
+        prepare: (sql) => ({
+            run: (...params) => {
+                sqlJsDb.run(sql, params);
+                return Promise.resolve({
+                    lastInsertRowid: sqlJsDb.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] || 0,
+                    changes: sqlJsDb.getRowsModified()
+                });
+            },
+            all: (...params) => {
+                const stmt = sqlJsDb.prepare(sql);
+                if (params.length) stmt.bind(params);
+                const results = [];
+                while (stmt.step()) results.push(stmt.getAsObject());
+                stmt.free();
+                return Promise.resolve(results);
+            },
+            get: (...params) => {
+                const stmt = sqlJsDb.prepare(sql);
+                if (params.length) stmt.bind(params);
+                const row = stmt.step() ? stmt.getAsObject() : undefined;
+                stmt.free();
+                return Promise.resolve(row);
+            }
+        }),
+        transaction: (fn) => {
+            return async (...args) => {
+                sqlJsDb.exec('BEGIN TRANSACTION');
+                try {
+                    const result = await fn(...args);
+                    sqlJsDb.exec('COMMIT');
+                    return result;
+                } catch (err) {
+                    sqlJsDb.exec('ROLLBACK');
+                    throw err;
+                }
+            };
+        },
+        pragma: (sql) => {
+            try {
+                sqlJsDb.exec(`PRAGMA ${sql}`);
+                return Promise.resolve();
+            } catch (e) {
+                return Promise.resolve(); // Ignore pragma failures
+            }
+        },
+        close: () => {
+            sqlJsDb.close();
+            return Promise.resolve();
+        }
+    };
+}
+
+// ─── sqlite3 wrapper (Local / Electron) ─────────────────────────────
+function createSqlite3Wrapper(nativeDb) {
+    const wrapper = {
+        all: (sql, params = []) => new Promise((resolve, reject) => {
+            nativeDb.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows));
+        }),
+        get: (sql, params = []) => new Promise((resolve, reject) => {
+            nativeDb.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
+        }),
+        run: (sql, params = []) => new Promise((resolve, reject) => {
+            nativeDb.run(sql, params, function (err) {
+                if (err) return reject(err);
+                resolve({ lastInsertRowid: this.lastID, changes: this.changes });
             });
-        };
-    },
-    pragma: (sql) => {
-        // Pragmas are just exec in sqlite3
-        return dbWrapper.exec(`PRAGMA ${sql}`);
-    },
-    close: () => new Promise((resolve, reject) => {
-        dbInstance.close((err) => err ? reject(err) : resolve());
-    })
-};
+        }),
+        exec: (sql) => new Promise((resolve, reject) => {
+            nativeDb.exec(sql, (err) => err ? reject(err) : resolve());
+        }),
+        prepare: (sql) => ({
+            run: (...params) => wrapper.run(sql, params),
+            all: (...params) => wrapper.all(sql, params),
+            get: (...params) => wrapper.get(sql, params)
+        }),
+        transaction: (fn) => {
+            return async (...args) => {
+                return new Promise((resolve, reject) => {
+                    nativeDb.serialize(async () => {
+                        try {
+                            await wrapper.exec('BEGIN TRANSACTION');
+                            const result = await fn(...args);
+                            await wrapper.exec('COMMIT');
+                            resolve(result);
+                        } catch (err) {
+                            await wrapper.exec('ROLLBACK');
+                            reject(err);
+                        }
+                    });
+                });
+            };
+        },
+        pragma: (sql) => wrapper.exec(`PRAGMA ${sql}`),
+        close: () => new Promise((resolve, reject) => {
+            nativeDb.close((err) => err ? reject(err) : resolve());
+        })
+    };
+    return wrapper;
+}
+
+// ─── Shared db wrapper reference ────────────────────────────────────
+let dbWrapper = null;
 
 /**
- * Initialize the database — create file and tables if they don't exist
+ * Initialize the database — create tables if they don't exist
  */
 async function initDatabase() {
-    // Lazy load native dependency
-    if (!sqlite3) {
-        sqlite3 = require('sqlite3').verbose();
-    }
+    if (dbPromise) return dbPromise;
 
-    // Ensure data directory exists (Skip if in-memory)
-    if (DB_PATH !== ':memory:') {
-        const dataDir = path.dirname(DB_PATH);
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-    }
+    dbPromise = (async () => {
+        const schema = fs.readFileSync(SCHEMA_PATH, 'utf-8');
 
-    if (!dbPromise) {
-        dbPromise = new Promise((resolve, reject) => {
-            dbInstance = new sqlite3.Database(DB_PATH, async (err) => {
-                if (err) {
-                    console.error('Failed to open database:', err.message);
-                    return reject(err);
-                }
+        if (IS_VERCEL) {
+            // ── sql.js path (pure JS, no native deps) ──
+            const initSqlJs = require('sql.js');
+            const SQL = await initSqlJs();
+            dbInstance = new SQL.Database();
+            dbWrapper = createSqlJsWrapper(dbInstance);
+        } else {
+            // ── sqlite3 path (native, for local/Electron) ──
+            const sqlite3 = require('sqlite3').verbose();
 
-                try {
-                    // Enable WAL and Foreign Keys
-                    // Try/Catch WAL because it fails on some systems/in-memory
-                    try {
-                        await dbWrapper.pragma('journal_mode = WAL');
-                    } catch (e) {
-                        console.warn('Could not set WAL mode (ignoring for serverless compatibility)');
-                    }
-                    await dbWrapper.pragma('foreign_keys = ON');
+            // Ensure data directory exists
+            const dataDir = path.dirname(DB_PATH);
+            if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+            }
 
-                    // Run schema
-                    const schema = fs.readFileSync(SCHEMA_PATH, 'utf-8');
-                    await dbWrapper.exec(schema);
-
-                    // Migration: Ensure 'phone' column exists in license_requests
-                    const tableInfo = await dbWrapper.all("PRAGMA table_info(license_requests)");
-                    if (tableInfo.length > 0 && !tableInfo.some(col => col.name === 'phone')) {
-                        console.log('  ⚠️  Migrating database: Adding phone column to license_requests');
-                        await dbWrapper.exec("ALTER TABLE license_requests ADD COLUMN phone TEXT NOT NULL DEFAULT 'N/A'");
-                    }
-
-                    console.log('  ✔ Database initialized');
-                    resolve(dbWrapper);
-                } catch (initErr) {
-                    reject(initErr);
-                }
+            await new Promise((resolve, reject) => {
+                dbInstance = new sqlite3.Database(DB_PATH, (err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
             });
-        });
-    }
+            dbWrapper = createSqlite3Wrapper(dbInstance);
+        }
+
+        // Enable foreign keys
+        try { await dbWrapper.pragma('foreign_keys = ON'); } catch (e) { }
+
+        // Run schema
+        await dbWrapper.exec(schema);
+
+        // Migration: Ensure 'phone' column exists in license_requests
+        const tableInfo = await dbWrapper.all("PRAGMA table_info(license_requests)");
+        if (tableInfo.length > 0 && !tableInfo.some(col => col.name === 'phone')) {
+            console.log('  ⚠️  Migrating database: Adding phone column');
+            await dbWrapper.exec("ALTER TABLE license_requests ADD COLUMN phone TEXT NOT NULL DEFAULT 'N/A'");
+        }
+
+        console.log('  ✔ Database initialized' + (IS_VERCEL ? ' (sql.js in-memory)' : ` (sqlite3 at ${DB_PATH})`));
+        return dbWrapper;
+    })();
 
     return dbPromise;
 }
@@ -144,7 +232,7 @@ async function initDatabase() {
  * Get the database instance
  */
 function getDb() {
-    if (!dbInstance) {
+    if (!dbWrapper) {
         throw new Error('Database not initialized. Call initDatabase() first.');
     }
     return dbWrapper;
@@ -154,9 +242,10 @@ function getDb() {
  * Close the database connection gracefully
  */
 async function closeDatabase() {
-    if (dbInstance) {
+    if (dbWrapper) {
         await dbWrapper.close();
         dbInstance = null;
+        dbWrapper = null;
         dbPromise = null;
         console.log('  ✔ Database closed');
     }

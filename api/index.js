@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const app = express();
 
 // --- BARE MINIMUM PING (No DB, No Routes) ---
@@ -36,6 +35,7 @@ process.on('uncaughtException', (err) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 // Middleware to ensure DB is initialized
 let dbInitialized = false;
 app.use(async (req, res, next) => {
@@ -91,12 +91,15 @@ app.get('/api/is-demo', async (req, res) => {
     }
 });
 
-// Catch-all for API 404s
-app.use('/api/*', (req, res) => {
-    if (initError) {
-        return res.status(500).json({ error: 'Server load error', details: initError.message });
+// Catch-all for API 404s — Express 5 compatible (use middleware, not wildcard pattern)
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+        if (initError) {
+            return res.status(500).json({ error: 'Server load error', details: initError.message });
+        }
+        return res.status(404).json({ error: 'API Endpoint not found', path: req.path });
     }
-    res.status(404).json({ error: 'API Endpoint not found' });
+    next();
 });
 
 // GLOBAL ERROR HANDLER
