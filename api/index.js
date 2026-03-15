@@ -13,6 +13,24 @@ app.get('/api/ping', (req, res) => {
     });
 });
 
+// --- DIAGNOSTIC: See exactly what Express receives ---
+app.get('/api/debug', (req, res) => {
+    res.json({
+        path: req.path,
+        url: req.url,
+        originalUrl: req.originalUrl,
+        baseUrl: req.baseUrl,
+        method: req.method,
+        headers: req.headers,
+        initError: initError ? initError.message : null,
+        routesMounted: {
+            reviewRoutes: !!reviewRoutes,
+            statsRoutes: !!statsRoutes,
+            licenseRoutes: !!licenseRoutes
+        }
+    });
+});
+
 // --- CRITICAL: Diagnostic logging to catch require errors ---
 let initError = null;
 let reviewRoutes, statsRoutes, licenseRoutes, initDatabase, seedDatabase, isCurrentlyDemo;
