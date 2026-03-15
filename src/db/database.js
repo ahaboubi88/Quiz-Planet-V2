@@ -185,9 +185,23 @@ async function initDatabase() {
 
         if (IS_VERCEL) {
             // ── sql.js path (pure JS, no native deps) ──
-            const initSqlJs = require('sql.js');
-            const SQL = await initSqlJs();
-            dbInstance = new SQL.Database();
+            // Use the JS-only bundle that doesn't need a separate .wasm file
+            let initSqlJs;
+            try {
+                // Try the bundled WASM version with explicit path
+                initSqlJs = require('sql.js');
+                const wasmPath = path.join(require.resolve('sql.js'), '..', 'dist', 'sql-wasm.wasm');
+                const SQL = await initSqlJs({
+                    locateFile: () => wasmPath
+                });
+                dbInstance = new SQL.Database();
+            } catch (wasmErr) {
+                // Fallback: load without WASM (slower but works everywhere)
+                console.warn('  ⚠ WASM load failed, using JS fallback:', wasmErr.message);
+                initSqlJs = require('sql.js/dist/sql-asm.js');
+                const SQL = await initSqlJs();
+                dbInstance = new SQL.Database();
+            }
             dbWrapper = createSqlJsWrapper(dbInstance);
         } else {
             // ── sqlite3 path (native, for local/Electron) ──
