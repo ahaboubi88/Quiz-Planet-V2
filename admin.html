@@ -45,6 +45,7 @@
             <div id="tab-stats" class="tab-btn active" onclick="showTab('stats')">Analytics</div>
             <div id="tab-reviews" class="tab-btn" onclick="showTab('reviews')">Reviews</div>
             <div id="tab-license" class="tab-btn" onclick="showTab('license')">License</div>
+            <div id="tab-upload" class="tab-btn" onclick="showTab('upload')">Game Distro</div>
         </div>
 
         <!-- Stats Tab -->
@@ -141,6 +142,37 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="content-upload" class="tab-content" style="display: none;">
+            <div class="glass" style="padding: 30px; border-radius: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Upload Latest Game (.exe)</h3>
+                </div>
+                <p style="opacity: 0.8; margin-bottom: 20px;">
+                    Users downloading the "Demo" or "Full" versions will receive the file uploaded here.
+                </p>
+
+                <div style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 20px;">
+                    <input type="file" id="game-upload-input" accept=".exe,.zip" style="display: none;" onchange="handleFileSelect(event)">
+                    <button onclick="document.getElementById('game-upload-input').click()" class="btn btn-primary" style="padding: 12px 24px; font-size: 1.1rem;">
+                        Select .exe File
+                    </button>
+                    <p id="file-selected-name" style="margin-top: 15px; font-family: monospace; color: var(--primary);"></p>
+                </div>
+
+                <div id="upload-progress-container" style="display: none; margin-bottom: 20px;">
+                    <p style="margin-bottom: 5px; font-size: 0.9rem;" id="upload-status-text">Uploading... 0%</p>
+                    <div style="width: 100%; background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; overflow: hidden;">
+                        <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <button id="start-upload-btn" onclick="startGameUpload()" class="btn btn-primary" style="width: 100%; display: none; background: #10b981;">
+                    Start Upload to Cloud
+                </button>
             </div>
         </div>
     </div>

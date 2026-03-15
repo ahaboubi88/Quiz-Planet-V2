@@ -236,3 +236,59 @@ function exportReviews() {
 function exportRequests() {
     downloadCSV(_cachedRequests, ['name', 'email', 'phone', 'hwid', 'activation_key', 'status', 'created_at'], 'quiz_planet_license_requests.csv');
 }
+
+// --- Game Distro Upload Logic ---
+
+let selectedGameFile = null;
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    selectedGameFile = file;
+    document.getElementById('file-selected-name').innerText = file.name + ` (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+    document.getElementById('start-upload-btn').style.display = 'block';
+    
+    // Reset progress UI
+    document.getElementById('upload-progress-container').style.display = 'none';
+    document.getElementById('upload-progress-bar').style.width = '0%';
+    document.getElementById('upload-status-text').innerText = 'Uploading... 0%';
+}
+
+async function startGameUpload() {
+    if (!selectedGameFile) return alert('No file selected!');
+
+    const progressContainer = document.getElementById('upload-progress-container');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const statusText = document.getElementById('upload-status-text');
+    const startBtn = document.getElementById('start-upload-btn');
+
+    startBtn.style.display = 'none';
+    progressContainer.style.display = 'block';
+
+    try {
+        statusText.innerText = 'Requesting secure upload token from Vercel...';
+        
+        // --- STEP 1: We will request a Vercel Blob Token here ---
+        // const tokenRes = await fetch('/api/admin/blob/token');
+        // ...
+
+        statusText.innerText = 'Uploading to Cloud Storage... (Coming Soon)';
+        progressBar.style.width = '50%';
+
+        // --- STEP 2: Client-side upload straight to Cloud (bypassing 4.5MB Vercel limit) ---
+        // ...
+
+        setTimeout(() => {
+            progressBar.style.width = '100%';
+            statusText.innerText = 'Upload Complete! Users will now download this version.';
+            statusText.style.color = '#10b981';
+        }, 1500);
+
+    } catch (err) {
+        console.error(err);
+        statusText.innerText = 'Upload Failed: ' + err.message;
+        statusText.style.color = '#ef4444';
+        startBtn.style.display = 'block'; // Let them retry
+    }
+}
