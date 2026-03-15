@@ -3,7 +3,7 @@
   "framework": null,
   "functions": {
     "api/index.js": {
-      "includeFiles": ["src/**", "node_modules/sql.js/dist/**"]
+      "includeFiles": "src/**"
     }
   },
   "rewrites": [
