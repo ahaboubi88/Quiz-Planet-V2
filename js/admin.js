@@ -257,6 +257,9 @@ function handleFileSelect(event) {
 
 async function startGameUpload() {
     if (!selectedGameFile) return alert('No file selected!');
+    
+    const githubToken = document.getElementById('github-pat-input').value.trim();
+    if (!githubToken) return alert('You must provide your GitHub Personal Access Token to upload new game files.');
 
     const progressContainer = document.getElementById('upload-progress-container');
     const progressBar = document.getElementById('upload-progress-bar');
@@ -266,29 +269,174 @@ async function startGameUpload() {
     startBtn.style.display = 'none';
     progressContainer.style.display = 'block';
 
+    const repoOwner = 'ahaboubi88';
+    const repoName = 'Quiz-Planet-V2';
+    const releaseTag = 'v' + new Date().toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
+    const releaseName = 'Quiz Planet Live Update - ' + new Date().toLocaleDateString();
+
     try {
-        statusText.innerText = 'Requesting secure upload token from Vercel...';
-        
-        // --- STEP 1: We will request a Vercel Blob Token here ---
-        // const tokenRes = await fetch('/api/admin/blob/token');
-        // ...
+        statusText.innerText = 'Creating new Release on GitHub...';
+        progressBar.style.width = '10%';
 
-        statusText.innerText = 'Uploading to Cloud Storage... (Coming Soon)';
-        progressBar.style.width = '50%';
+        // STEP 1: Create a Draft Release
+        const createReleaseRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tag_name: releaseTag,
+                name: releaseName,
+                body: 'Automatic executable upload via Admin Dashboard.',
+                draft: true, // Keep it draft until upload completes
+                prerelease: false
+            })
+        });
 
-        // --- STEP 2: Client-side upload straight to Cloud (bypassing 4.5MB Vercel limit) ---
-        // ...
+        if (!createReleaseRes.ok) {
+            const errJson = await createReleaseRes.json();
+            throw new Error(errJson.message || 'Failed to create GitHub release');
+        }
 
-        setTimeout(() => {
-            progressBar.style.width = '100%';
-            statusText.innerText = 'Upload Complete! Users will now download this version.';
-            statusText.style.color = '#10b981';
-        }, 1500);
+        const releaseData = await createReleaseRes.json();
+        const uploadUrl = releaseData.upload_url.replace(/\{.*\}/, '') + '?name=' + encodeURIComponent(selectedGameFile.name);
+
+        statusText.innerText = 'Uploading 230MB Game File to GitHub... 0%';
+
+        // STEP 2: Upload the binary using XMLHttpRequest to get progress events
+        await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadUrl, true);
+            
+            xhr.setRequestHeader('Authorization', `Bearer ${githubToken}`);
+            xhr.setRequestHeader('Accept', 'application/vnd.github.v3+json');
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+            
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    // Start progress bar visual from 10% to 90% space
+                    progressBar.style.width = (10 + (percent * 0.8)) + '%';
+                    statusText.innerText = `Uploading 230MB Game File to GitHub... ${percent}%`;
+                }
+            };
+            
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) resolve();
+                else reject(new Error('GitHub rejected the binary upload. Status: ' + xhr.status));
+            };
+            
+            xhr.onerror = () => reject(new Error('Network error during upload'));
+            
+            xhr.send(selectedGameFile);
+        });
+
+        statusText.innerText = 'Publishing Release...';
+        progressBar.style.width = '95%';
+
+        // STEP 3: Publish the Release (remove draft status)
+        const publishRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases/${releaseData.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ draft: false })
+        });
+
+        if (!publishRes.ok) throw new Error('Failed to publish the release');
+
+        progressBar.style.width = '100%';
+        statusText.innerText = 'Upload Complete! Users will now instantly download this version.';
+        statusText.style.color = '#10b981';
+
+        // Clear password box for safety
+        // document.getElementById('github-pat-input').value = ''; // We can keep it to ease multiple ops
+
+        // Refresh the current release view
+        fetchCurrentLiveRelease();
 
     } catch (err) {
         console.error(err);
         statusText.innerText = 'Upload Failed: ' + err.message;
         statusText.style.color = '#ef4444';
         startBtn.style.display = 'block'; // Let them retry
+    }
+}
+
+// Fetch the currently active release to show the admin
+let _currentReleaseId = null;
+
+async function fetchCurrentLiveRelease() {
+    try {
+        const res = await fetch('https://api.github.com/repos/ahaboubi88/Quiz-Planet-V2/releases/latest');
+        const nameEl = document.getElementById('current-release-name');
+        const metaEl = document.getElementById('current-release-meta');
+        const delBtn = document.getElementById('delete-release-btn');
+        
+        if (res.ok) {
+            const data = await res.json();
+            _currentReleaseId = data.id;
+            
+            if (data.assets && data.assets.length > 0) {
+                const asset = data.assets[0];
+                nameEl.innerText = asset.name;
+                nameEl.style.color = '#10b981';
+                
+                const mb = (asset.size / 1024 / 1024).toFixed(2);
+                const date = new Date(asset.created_at).toLocaleString();
+                metaEl.innerText = `${mb} MB • Uploaded ${date}`;
+                
+                delBtn.style.display = 'block';
+            } else {
+                nameEl.innerText = "No game file uploaded yet.";
+                nameEl.style.color = 'var(--text-muted)';
+                metaEl.innerText = "Upload a .exe below.";
+                delBtn.style.display = 'none';
+            }
+        } else {
+            nameEl.innerText = "No Live Releases Found.";
+            metaEl.innerText = "Upload a .exe below.";
+            delBtn.style.display = 'none';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Call this function when the user switches to the Upload tab or the dashboard loads
+window.addEventListener('DOMContentLoaded', fetchCurrentLiveRelease);
+
+async function deleteCurrentRelease() {
+    if (!_currentReleaseId) return;
+    
+    const githubToken = document.getElementById('github-pat-input').value.trim();
+    if (!githubToken) return alert('You must provide your GitHub Personal Access Token to delete a release.');
+    
+    if (!confirm('Are you absolutely sure you want to stop users from downloading this game version? (This deletes it from GitHub)')) return;
+
+    try {
+        document.getElementById('delete-release-btn').innerText = 'Deleting...';
+        
+        const res = await fetch(`https://api.github.com/repos/ahaboubi88/Quiz-Planet-V2/releases/${_currentReleaseId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        if (!res.ok && res.status !== 204) throw new Error('Failed to delete release');
+        
+        alert('Game update deleted successfully.');
+        document.getElementById('current-release-name').innerText = 'Refreshing...';
+        fetchCurrentLiveRelease();
+        
+    } catch (err) {
+        alert('Failed to delete: ' + err.message);
+        document.getElementById('delete-release-btn').innerText = 'Delete Release';
     }
 }

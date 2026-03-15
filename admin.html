@@ -155,6 +155,25 @@
                     Users downloading the "Demo" or "Full" versions will receive the file uploaded here.
                 </p>
 
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; opacity: 0.8;">GitHub Personal Access Token (Required for 230MB+ Uploads/Deletes)</label>
+                    <input type="password" id="github-pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white;">
+                    <small style="opacity: 0.6; display: block; margin-top: 5px;">Needs 'repo' scope. Only required when managing files.</small>
+                </div> <!-- END PAT BOX -->
+
+                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0;">
+
+                <div style="margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; color: var(--primary);">Current Live Game File</h4>
+                    <div id="current-release-box" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p id="current-release-name" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Loading...</p>
+                            <p id="current-release-meta" style="font-size: 0.8rem; opacity: 0.7;">Fetching from GitHub...</p>
+                        </div>
+                        <button id="delete-release-btn" onclick="deleteCurrentRelease()" class="btn" style="background: #ef4444; display: none;">Delete Release</button>
+                    </div>
+                </div>
+
                 <div style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 20px;">
                     <input type="file" id="game-upload-input" accept=".exe,.zip" style="display: none;" onchange="handleFileSelect(event)">
                     <button onclick="document.getElementById('game-upload-input').click()" class="btn btn-primary" style="padding: 12px 24px; font-size: 1.1rem;">
