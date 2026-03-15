@@ -341,3 +341,20 @@ footer {
     font-size: 0.9rem;
     font-weight: 500;
 }
+
+/* Mobile Nav Stacking Fix (Portrait Smartphones) */
+@media (max-width: 650px) {
+    .nav-container {
+        flex-direction: column;
+        gap: 15px;
+        padding-top: 5px;
+    }
+    .nav-links {
+        gap: 12px !important;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    nav {
+        padding: 0.8rem 0 !important;
+    }
+}
