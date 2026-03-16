@@ -467,3 +467,14 @@ footer {
         width: auto;
     }
 }
+
+/* Mobile Landscape — phones turned sideways */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero-btns .btn-outline {
+        display: none;
+    }
+    .hero-btns .btn-primary {
+        white-space: nowrap;
+        width: auto;
+    }
+}
