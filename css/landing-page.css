@@ -228,6 +228,8 @@ footer {
 
 .hero-visual {
     position: relative;
+    transform: scale(1.25);
+    transform-origin: center center;
 }
 
 .hero-image-wrapper {
