@@ -447,4 +447,13 @@ footer {
     .hero-btns {
         justify-content: center;
     }
+    /* Hide Explore Features button on mobile */
+    .hero-btns .btn-outline {
+        display: none;
+    }
+    /* Download button: text on one line, auto width */
+    .hero-btns .btn-primary {
+        white-space: nowrap;
+        width: auto;
+    }
 }
