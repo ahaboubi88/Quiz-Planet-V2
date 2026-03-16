@@ -398,10 +398,20 @@ footer {
     nav {
         padding: 0.8rem 0 !important;
     }
-    
-    /* Make the logo text a bit smaller if needed to fit everything on very small screens */
-    .nav-logo-text {
-        font-size: 1.25rem !important;
+
+    /* Slightly bigger logo on mobile */
+    .nav-container img[alt="Logo"] {
+        width: 48px !important;
+    }
+
+    /* Language toggle: icon only on mobile */
+    .lang-text {
+        display: none;
+    }
+    #lang-toggle {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 1.1rem !important;
+        min-width: unset;
     }
 
     /* Mobile dropdown menu */
