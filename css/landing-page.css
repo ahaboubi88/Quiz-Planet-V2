@@ -159,7 +159,7 @@ body {
 }
 
 .price {
-    font-size: 10rem;
+    font-size: 3rem;
     font-weight: 700;
     margin: var(--space-sm) 0;
     display: block;
