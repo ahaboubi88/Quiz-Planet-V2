@@ -167,7 +167,7 @@ body {
     letter-spacing: 2px;
 }
 
-.price span {
+.price span[data-i18n$="_note"] {
     font-size: 1.1rem;
     color: var(--text-muted);
     letter-spacing: 0;
