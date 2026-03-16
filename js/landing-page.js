@@ -129,6 +129,23 @@ document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang === 'en' ? 'ar' : 'en');
     });
 
+    // Hamburger Menu Toggle
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (hamburgerBtn && mobileMenu) {
+        hamburgerBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('open');
+            mobileMenu.classList.toggle('open');
+        });
+        // Close menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('open');
+                mobileMenu.classList.remove('open');
+            });
+        });
+    }
+
     // 1. Intersection Observer for Scroll Reveals
     const observerOptions = {
         threshold: 0.1,

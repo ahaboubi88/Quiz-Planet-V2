@@ -30,16 +30,30 @@
                 <span style="font-weight: 700; font-size: 1.5rem; letter-spacing: -1px;">Quiz Planet</span>
             </div>
             <div class="nav-links" style="display: flex; gap: 2rem; align-items: center;">
-                <a href="#features" style="color: var(--text-muted); text-decoration: none; font-weight: 500;"
+                <!-- These go into hamburger on mobile -->
+                <a href="#features" class="nav-menu-item" style="color: var(--text-muted); text-decoration: none; font-weight: 500;"
                     data-i18n="nav_features">Features</a>
-                <a href="https://www.youtube.com/@QuizPlanet-app" target="_blank"
+                <a href="https://www.youtube.com/@QuizPlanet-app" target="_blank" class="nav-menu-item"
                     style="color: var(--text-muted); text-decoration: none; font-weight: 500;"
                     data-i18n="nav_instructions">Instructions</a>
-                <a href="#pricing" class="btn btn-primary" style="padding: 0.5rem 1.5rem;"
+                <!-- These stay visible on mobile -->
+                <a href="#pricing" class="btn btn-primary nav-always-visible" style="padding: 0.5rem 1.5rem;"
                     data-i18n="nav_get_started">Get Started</a>
-                <button id="lang-toggle" class="btn btn-outline"
+                <button id="lang-toggle" class="btn btn-outline nav-always-visible"
                     style="padding: 0.4rem 1rem; font-size: 0.9rem; border-radius: 8px;">🌐 EN / ع</button>
+                <!-- Hamburger button (mobile only) -->
+                <button id="hamburger-btn" class="hamburger-btn" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
             </div>
+        </div>
+        <!-- Mobile dropdown menu -->
+        <div id="mobile-menu" class="mobile-menu">
+            <a href="#features" style="color: var(--text-muted); text-decoration: none; font-weight: 500; padding: 12px 20px; display: block;"
+                data-i18n="nav_features">Features</a>
+            <a href="https://www.youtube.com/@QuizPlanet-app" target="_blank"
+                style="color: var(--text-muted); text-decoration: none; font-weight: 500; padding: 12px 20px; display: block;"
+                data-i18n="nav_instructions">Instructions</a>
         </div>
     </nav>
 

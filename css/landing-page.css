@@ -342,19 +342,92 @@ footer {
     font-weight: 500;
 }
 
-/* Mobile Nav Stacking Fix (Portrait Smartphones) */
-@media (max-width: 650px) {
-    .nav-container {
-        flex-direction: column;
-        gap: 15px;
-        padding-top: 5px;
+/* Hamburger Button — hidden on desktop */
+.hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 200;
+}
+.hamburger-btn span {
+    display: block;
+    width: 24px;
+    height: 2.5px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+.hamburger-btn.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger-btn.open span:nth-child(2) {
+    opacity: 0;
+}
+.hamburger-btn.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Mobile dropdown — hidden on desktop */
+.mobile-menu {
+    display: none;
+}
+
+/* Mobile Styles (≤768px) */
+@media (max-width: 768px) {
+    /* Show hamburger button */
+    .hamburger-btn {
+        display: flex;
     }
+
+    /* Hide Features & Instructions from navbar */
+    .nav-menu-item {
+        display: none !important;
+    }
+
+    /* Compact the nav */
     .nav-links {
-        gap: 12px !important;
-        flex-wrap: wrap;
-        justify-content: center;
+        gap: 10px !important;
     }
     nav {
         padding: 0.8rem 0 !important;
+    }
+
+    /* Mobile dropdown menu */
+    .mobile-menu {
+        display: none;
+        flex-direction: column;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding: 8px 0;
+        animation: slideDown 0.3s ease;
+    }
+    .mobile-menu.open {
+        display: flex;
+    }
+    .mobile-menu a {
+        padding: 14px 24px !important;
+        font-size: 1rem;
+        transition: background 0.2s;
+    }
+    .mobile-menu a:hover {
+        background: rgba(255,255,255,0.08);
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Smaller Get Started button on mobile */
+    .nav-always-visible.btn-primary {
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem;
     }
 }
