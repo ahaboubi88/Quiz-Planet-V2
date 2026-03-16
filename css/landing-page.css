@@ -469,6 +469,12 @@ footer {
         white-space: nowrap;
         width: auto;
     }
+    /* Pricing card buttons: text on one line */
+    .pricing-card .btn {
+        white-space: nowrap;
+        width: auto !important;
+        padding: 0.6rem 1.2rem !important;
+    }
 }
 
 /* Mobile Landscape — phones turned sideways */
