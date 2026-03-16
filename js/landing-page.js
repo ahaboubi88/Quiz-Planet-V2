@@ -51,7 +51,7 @@ const landingTranslations = {
     p2_price: { en: `$13`, ar: `13$` },
     p2_note: { en: ` / one-time`, ar: ` / لمرة واحدة` },
     p2_l1: { en: `Unlimited Questions`, ar: `أسئلة غير محدودة` },
-    p2_l2: { en: `Unlimited Players`, ar: `لاعبون غير محدودون` },
+    p2_l2: { en: `Unlimited Players`, ar: `لاعبون غير محدودين` },
     p2_l3: { en: `Online Multiplayer Support`, ar: `دعم اللعب المتعدد عبر الإنترنت` },
     p2_l4: { en: `Secure Tunnels Included`, ar: `قنوات اتصال آمنة` },
     p2_l5: { en: `Priority Support`, ar: `دعم فني ذو أولوية` },
