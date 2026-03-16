@@ -159,9 +159,9 @@ body {
 }
 
 .price {
-    font-size: 5rem;
+    font-size: 10rem;
     font-weight: 700;
-    margin: var(--space-lg) 0;
+    margin: var(--space-sm) 0;
     display: block;
     color: #f1f5f9;
     letter-spacing: 2px;
