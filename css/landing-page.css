@@ -455,6 +455,9 @@ footer {
     .hero-visual {
         display: none;
     }
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
     .hero-content {
         grid-template-columns: 1fr;
         text-align: center;
