@@ -488,6 +488,9 @@ footer {
 
 /* Mobile Landscape — phones turned sideways */
 @media (max-height: 500px) and (orientation: landscape) {
+    html {
+        font-size: 100%;
+    }
     .hero-btns .btn-outline {
         display: none;
     }
