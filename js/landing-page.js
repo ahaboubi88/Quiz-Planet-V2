@@ -150,8 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Smooth Scrolling for Navigation Links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            // Skip if href was dynamically changed to a full URL (e.g. download links)
+            if (!href || !href.startsWith('#')) return;
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const target = document.querySelector(href);
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth',
