@@ -389,11 +389,6 @@ footer {
         display: none !important;
     }
 
-    /* Hide elements marked as hide-on-mobile */
-    .hide-on-mobile {
-        display: none !important;
-    }
-
     /* Keep the nav-container as a single row */
     .nav-container {
         flex-wrap: nowrap !important;
