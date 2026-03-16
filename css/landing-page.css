@@ -384,41 +384,24 @@ footer {
         display: flex;
     }
 
-    /* Hide Features & Instructions from navbar */
+    /* Hide Features, Instructions, Get Started from navbar */
     .nav-menu-item {
         display: none !important;
     }
 
-    /* Wrap nav so Get Started drops to second row */
+    /* Keep the nav-container as a single row */
     .nav-container {
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important;
     }
 
-    /* Compact the nav links */
-    .nav-links {
-        gap: 10px !important;
-    }
+    /* Compact the nav */
     nav {
         padding: 0.8rem 0 !important;
     }
-
-    /* Get Started button goes full-width on a new row below logo */
-    .nav-always-visible.btn-primary {
-        order: 10;
-        width: 100%;
-        text-align: center;
-        padding: 0.5rem 1rem !important;
-        font-size: 0.9rem;
-        margin-top: 6px;
-    }
-    /* Force the button row to wrap */
-    .nav-links {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-    /* Make the whole nav-links take full width so the button spans below */
-    .nav-container > .nav-links {
-        flex: 1;
+    
+    /* Make the logo text a bit smaller if needed to fit everything on very small screens */
+    .nav-logo-text {
+        font-size: 1.25rem !important;
     }
 
     /* Mobile dropdown menu */

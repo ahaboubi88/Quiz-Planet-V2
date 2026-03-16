@@ -26,8 +26,12 @@
     <nav style="position: fixed; top: 0; width: 100%; z-index: 100; padding: 1.5rem 0;" class="glass">
         <div class="container nav-container" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- Hamburger button (mobile only, hidden on desktop) -->
+                <button id="hamburger-btn" class="hamburger-btn" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
                 <img src="/img/favicon.png" alt="Logo" style="width: 40px;">
-                <span style="font-weight: 700; font-size: 1.5rem; letter-spacing: -1px;">Quiz Planet</span>
+                <span class="nav-logo-text" style="font-weight: 700; font-size: 1.5rem; letter-spacing: -1px;">Quiz Planet</span>
             </div>
             <div class="nav-links" style="display: flex; gap: 2rem; align-items: center;">
                 <!-- These go into hamburger on mobile -->
@@ -36,15 +40,12 @@
                 <a href="https://www.youtube.com/@QuizPlanet-app" target="_blank" class="nav-menu-item"
                     style="color: var(--text-muted); text-decoration: none; font-weight: 500;"
                     data-i18n="nav_instructions">Instructions</a>
-                <!-- These stay visible on mobile -->
-                <a href="#pricing" class="btn btn-primary nav-always-visible" style="padding: 0.5rem 1.5rem;"
+                <a href="#pricing" class="btn btn-primary nav-menu-item" style="padding: 0.5rem 1.5rem;"
                     data-i18n="nav_get_started">Get Started</a>
-                <button id="lang-toggle" class="btn btn-outline nav-always-visible"
+                
+                <!-- This stays visible on mobile (far right) -->
+                <button id="lang-toggle" class="btn btn-outline"
                     style="padding: 0.4rem 1rem; font-size: 0.9rem; border-radius: 8px;">🌐 EN / ع</button>
-                <!-- Hamburger button (mobile only) -->
-                <button id="hamburger-btn" class="hamburger-btn" aria-label="Menu">
-                    <span></span><span></span><span></span>
-                </button>
             </div>
         </div>
         <!-- Mobile dropdown menu -->
@@ -54,6 +55,8 @@
             <a href="https://www.youtube.com/@QuizPlanet-app" target="_blank"
                 style="color: var(--text-muted); text-decoration: none; font-weight: 500; padding: 12px 20px; display: block;"
                 data-i18n="nav_instructions">Instructions</a>
+            <a href="#pricing" class="btn btn-primary" style="margin: 12px 20px; text-align: center; display: block;"
+                data-i18n="nav_get_started">Get Started</a>
         </div>
     </nav>
 
