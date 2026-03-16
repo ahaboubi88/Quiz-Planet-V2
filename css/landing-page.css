@@ -29,6 +29,7 @@
 
 html {
     scroll-behavior: smooth;
+    font-size: 125%;
 }
 
 body {
@@ -385,6 +386,11 @@ footer {
     /* Show hamburger button */
     .hamburger-btn {
         display: flex;
+    }
+
+    /* Reset root font-size for mobile */
+    html {
+        font-size: 100%;
     }
 
     /* Hide Features, Instructions, Get Started from navbar */
