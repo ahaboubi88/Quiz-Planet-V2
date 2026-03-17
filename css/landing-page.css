@@ -55,6 +55,16 @@ body {
     border-radius: var(--radius-md);
 }
 
+/* Brighter placeholder text for form inputs */
+input.glass::placeholder,
+textarea.glass::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+input.glass::-webkit-input-placeholder,
+textarea.glass::-webkit-input-placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 /* Buttons */
 .btn {
     display: inline-block;
