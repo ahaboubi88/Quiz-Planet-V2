@@ -83,6 +83,7 @@ const landingTranslations = {
     ph_email: { en: `Email Address`, ar: `البريد الإلكتروني` },
     ph_phone: { en: `Phone Number`, ar: `رقم الهاتف` },
     ph_hwid: { en: `Your Machine HWID (from App)`, ar: `معرف الجهاز (HWID) الخاص بك` },
+    hwid_help_link: { en: `❓ How to get my HWID?`, ar: `❓ كيف أحصل على معرف جهازي (HWID)؟` },
     btn_submit_request: { en: `Submit Request`, ar: `إرسال الطلب` },
     sending_msg: { en: `Sending...`, ar: `جاري الإرسال...` },
 
